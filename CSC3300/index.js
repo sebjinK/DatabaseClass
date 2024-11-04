@@ -17,7 +17,7 @@ var app = express()
 app.use(cors())
 app.use(express.json())
 
-app.post("/createroom", (req, res, next) =>
+app.post("/rooms", (req, res, next) =>
 {
     let strRoomNumber = req.body.RoomNumber
     console.log(strRoomNumber)
@@ -57,7 +57,7 @@ app.post("/createroom", (req, res, next) =>
     })
 })
 
-app.get('/retreiverooms', (req, res, next) =>
+app.get('/rooms', (req, res, next) =>
 {
     let strCommand = 'SELECT * FROM tblClassrooms'
     console.log("Sent Request")
@@ -88,7 +88,65 @@ app.get('/retreiverooms', (req, res, next) =>
     console.log("Got Request")
 })
 
-app.post("/createreservation", (req, res, next) =>
+app.put("/sessions", (req, res, next) =>
+{
+    let strSessionID = req.body.SessionID
+    let strCommand = "UPDATE tblSessions SET LastUsedDateTime = NOW() WHERE SessionID = ?"
+    conDibbs.getConnection(function(err, connection)
+    {
+        if (err)
+        {
+            console.log(err)
+            res.status(500).json({status:"error",message:err})
+        }
+        else
+        {
+            conDibbs.query(strCommand, strSessionID, function(err, result)
+            {
+                if (err)
+                {
+                    console.log(err)
+                    res.status(500).json({status:"error",message:err})
+                }
+                else
+                {
+                    res.status(200).json(result)
+                }
+            })
+        }
+        conDibbs.release()
+    })
+})
+app.delete("/rooms", (req, res, next) =>
+{
+    let strRoomNumber = req.body.RoomNumber
+    let strCommand = "DELETE FROM tblClassrooms WHERE RoomNumber = ?"
+    conDibbs.getConnection(function(err, connection)
+    {
+        if (err)
+        {
+            console.log(err)
+            res.status(500).json({status:"error",message:err})
+        }
+        else
+        {
+            conDibbs.query(strCommand, strRoomNumber, function(err, result)
+            {
+                if (err)
+                {
+                    console.log(err)
+                    res.status(500).json({status:"error",message:err})
+                }
+                else
+                {
+                    res.status(200).json(result)
+                }
+            })
+        }
+    })
+})
+
+app.post("/reservations", (req, res, next) =>
 {
     let strClassroomID = req.body.ClassroomID
     let strUserID = req.body.UserID
@@ -161,7 +219,8 @@ app.post("/createreservation", (req, res, next) =>
     })
 })
 
-app.get("/retrievereservations", (req, res, next) => 
+
+app.get("/reservations", (req, res, next) => 
 {
     let strCommand = 'SELECT * FROM tblReservations'
     console.log("Sent Request")
