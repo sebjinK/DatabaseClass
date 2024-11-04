@@ -1,0 +1,66 @@
+--Test Review--
+
+CREATE TABLE tblBooks (
+ BookID INT AUTO_INCREMENT NOT NULL,
+    Title VARCHAR(100),
+    Author VARCHAR(50),
+    Price DECIMAL(5,2),
+    Stock INT,
+    PRIMARY KEY (BookID)
+);
+
+CREATE TABLE tblCustomers (
+ CustomerID INT AUTO_INCREMENT NOT NULL,
+    FirstName VARCHAR(50),
+    LastName VARCHAR(50),
+    Email VARCHAR(100),
+    RegistrationDate DATE,
+    PRIMARY KEY (CustomerID)
+);
+
+CREATE TABLE tblOrders (
+ OrderID INT AUTO_INCREMENT NOT NULL,
+    CustomerID INT,
+    OrderDate DATE,
+    TotalAmount DECIMAL(8,2),
+    PRIMARY KEY (OrderID),
+    FOREIGN KEY (CustomerID) REFERENCES tblCustomers (CustomerID) ON DELETE CASCADE
+);
+
+CREATE TABLE tblOrderDetails (
+ OrderDetailID INT AUTO_INCREMENT NOT NULL,
+    OrderID INT,
+    BookID INT,
+    Quantity INT,
+    UnitPrice DECIMAL(5,2),
+    PRIMARY KEY (OrderDetailID),
+    FOREIGN KEY (OrderID) REFERENCES tblOrders (OrderID) ON DELETE CASCADE,
+    FOREIGN KEY (BookID) REFERENCES tblBooks (BookID) ON DELETE CASCADE
+);
+
+INSERT INTO tblBooks (Title,Author,Price,Stock) VALUES ('Dune','Frank Herbert',19.50,12);
+INSERT INTO tblBooks (Title,Author,Price,Stock) VALUES ('Rainbow Six','Tom Clancy',.75,1);
+INSERT INTO tblBooks (Title,Author,Price,Stock) VALUES ('Bad as I want to be','Dennis Rodman',1.95,2);
+SELECT * FROM tblBooks;
+
+INSERT INTO tblCustomers(FirstName,LastName,Email,RegistrationDate) VALUES ('Ben','Burchfield','bburchfield@tntech.edu',CURDATE());
+INSERT INTO tblCustomers(FirstName,LastName,Email,RegistrationDate) VALUES ('Bob','Bobber','bbobber@tntech.edu',CURDATE());
+SELECT * FROM tblCustomers;
+SELECT * FROM tblOrders;
+DELETE FROM tblCustomers WHERE CustomerID < 3;
+SELECT * FROM tblOrders;
+INSERT INTO tblOrders (CustomerID,OrderDate,TotalAmount) VALUES (3,CURDATE(),.75);
+INSERT INTO tblOrderDetails (OrderID,BookID,Quantity,UnitPrice) VALUES (1,2,1,.75);
+DELETE FROM tblOrderDetails
+SELECT * FROM tblOrderDetails;
+DELETE FROM tblBooks WHERE BookID = 2
+
+SELECT CONCAT(tblCustomers.FirstName, ' ' ,tblCustomers.LastName) AS FullName, tblOrders.OrderDate, tblOrders.TotalAmount FROM tblOrders INNER JOIN tblCustomers ON tblOrders.CustomerID = tblCustomers.CustomerID;
+
+SELECT tblBooks.Title FROM tblBooks WHERE tblBooks.BookID NOT IN (SELECT DISTINCT(BookID) FROM tblOrderDetails)
+
+SELECT CONCAT(tblCustomers.FirstName, ' ' ,tblCustomers.LastName) AS FullName, SUM(tblOrders.TotalAmount) AS TotalSpent FROM tblOrders INNER JOIN tblCustomers ON tblOrders.CustomerID = tblCustomers.CustomerID GROUP BY tblCustomers.CustomerID ORDER BY tblCustomers.LastName DESC;
+
+UPDATE tblBooks SET Price = (Price *1.1) WHERE BookID = 3;
+
+SELECT tblCustomers.FirstName, tblCustomers.LastName FROM tblCustomers JOIN tblOrders ON tblCustomers.CustomerID = tblOrders.CustomerID GROUP BY tblOrders.CustomerID Order BY SUM(TotalAmount) DESC LIMIT 3;
